@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
         play.getOptions(argc, argv);
         play.readData();
         play.routing();
+        play.backtracing();
         cout << 1;
     }
 

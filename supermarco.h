@@ -23,6 +23,8 @@ public:
     
     void routing();
     
+    void printSolution(); // REMEMBER THIS. SHOULD BE DONE BEFORE EVEN BACKTRACING
+    
     void backtracing();
     
     void firstOutputMode();
@@ -38,8 +40,9 @@ private:
     
     struct tile {
         char symbol = '.';
-        bool isDiscovered;
+        bool isDiscovered = 0;
         char predecessor;
+        u_int32_t preceedingRoom;
     }; 
     
     struct location {

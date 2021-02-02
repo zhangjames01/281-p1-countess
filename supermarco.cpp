@@ -113,6 +113,7 @@ void supermarco::readData() {
                             }
                             
                             castleMap[static_cast<int>(i)][static_cast<int>(j)][static_cast<int>(k)] = temp;
+                            temp.isDiscovered = 0; // THIS RESETS THE VARIABLE, FIGURE OUT IF TEMP SHOULD BE OUTSIDE OR INSIDE WHILE LOOP
                             
                         } // for k
                     }
@@ -152,6 +153,7 @@ void supermarco::readData() {
                 
                 // Adds in tile with respect to [room][row][col] into 3D vector
                 castleMap[roomNumber][rowNumber][colNumber] = temp;
+                temp.isDiscovered = 0; // THIS RESETS THE VARIABLE, FIGURE OUT IF TEMP SHOULD BE OUTSIDE OR INSIDE WHILE LOOP
             }
             else { // Reads line to skip over comments or consumes remaining '\n\' at the end of each line
                 getline(cin, comments);
@@ -172,14 +174,10 @@ void supermarco::routing() {
         
         if (isStack) { // Remove position in back of container if stack
             currentLocation = routingScheme.back();
-            // Add location walked to backtrace stack
-            backtrace.push(routingScheme.back());
             routingScheme.pop_back();
         }
         else { // Remove position in front of container if queue
             currentLocation = routingScheme.front();
-            // Add location walked to backtrace stack
-            backtrace.push(routingScheme.front());
             routingScheme.pop_front();
         }
         
@@ -196,14 +194,18 @@ void supermarco::routing() {
                     //Set the location's predecessor
                     castleMap[pipeRoom][currentLocation.row][currentLocation.col].predecessor = 'p';
                     
+                    //Set the location's preceeding room
+                    castleMap[pipeRoom][currentLocation.row][currentLocation.col].preceedingRoom = currentLocation.room;
+                    
                     // Add it to the deque
                     location pipe = {pipeRoom, currentLocation.row, currentLocation.col};
                     routingScheme.push_back(pipe);
                     ++tilesDiscovered;
                     
-                    // If we added the Countess' location, stop searching
+                    // If we added the Countess' location, stop searching and add to the backtrace stack
                     if (castleMap[pipe.room][pipe.row][pipe.col].symbol == 'C') {
                         isSolution = 1;
+                        backtrace.push(pipe);
                         break;
                     }
                 }
@@ -228,9 +230,10 @@ void supermarco::routing() {
                         routingScheme.push_back(north);
                         ++tilesDiscovered;
                         
-                        // If we added the Countess' location, stop searching
+                        // If we added the Countess' location, stop searching and add to the backtrace stack
                         if (castleMap[north.room][north.row][north.col].symbol == 'C') {
                             isSolution = 1;
+                            backtrace.push(north);
                             break;
                         }
                     }
@@ -252,9 +255,10 @@ void supermarco::routing() {
                         routingScheme.push_back(east);
                         ++tilesDiscovered;
                         
-                        // If we added the Countess' location, stop searching
+                        // If we added the Countess' location, stop searching and add to the backtrace stack
                         if (castleMap[east.room][east.row][east.col].symbol == 'C') {
                             isSolution = 1;
+                            backtrace.push(east);
                             break;
                         }
                     }
@@ -276,15 +280,16 @@ void supermarco::routing() {
                         routingScheme.push_back(south);
                         ++tilesDiscovered;
                         
-                        // If we added the Countess' location, stop searching
+                        // If we added the Countess' location, stop searching and add to the backtrace stack
                         if (castleMap[south.room][south.row][south.col].symbol == 'C') {
                             isSolution = 1;
+                            backtrace.push(south);
                             break;
                         }
                     }
                 }
             }
-            if (currentLocation.col - 1 != -1) { // Check if exists (subtract col: < 0)
+            if (currentLocation.col - 1 != -1) { // Check if West exists (subtract col: < 0)
                 if (castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].symbol != '#' &&
                     castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].symbol != '!') { // Check if West is walkable
                     if (!castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].isDiscovered) { // Check if West has not been discovered
@@ -293,16 +298,17 @@ void supermarco::routing() {
                         castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].isDiscovered = 1;
                         
                         //Set the location's predecessor
-                        castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].isDiscovered = 'w';
+                        castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].predecessor = 'w';
                         
                         // Add it to the deque
                         location west = {currentLocation.room, currentLocation.row, currentLocation.col - 1};
                         routingScheme.push_back(west);
                         ++tilesDiscovered;
                         
-                        // If we added the Countess' location, stop searching
+                        // If we added the Countess' location, stop searching and add to the backtrace stack
                         if (castleMap[west.room][west.row][west.col].symbol == 'C') {
                             isSolution = 1;
+                            backtrace.push(west);
                             break;
                         }
                     }
@@ -313,31 +319,35 @@ void supermarco::routing() {
     } // while loop
 }
 
+
 void supermarco::backtracing() {
-    if (!isSolution) {
-        cout << "No solution, " << tilesDiscovered << " tiles discovered.\n";
-    }
-    
-    else {
-        
-    // ----------------------------------------------------------------------------
-    //                               MAP OUTPUT MODE
-    // ----------------------------------------------------------------------------
-        if (outputFormat == 'M') {
-            
+    location currentLocation = backtrace.top(); // Sets current location to Countess
+
+    // While loops until starting position has been added into the backtrace stack
+    while (castleMap[currentLocation.room][currentLocation.row][currentLocation.col].symbol != 'S') {
+        char thePredecessor = castleMap[currentLocation.room][currentLocation.row][currentLocation.col].predecessor;
+        if (thePredecessor == 'n') {
+            // can i change a struct's variables after declaration
+            currentLocation = {currentLocation.room, currentLocation.row + 1, currentLocation.col};
+            backtrace.push(currentLocation);
         }
-        
-        
-    // ----------------------------------------------------------------------------
-    //                               LIST ONPUT MODE
-    // ----------------------------------------------------------------------------
+        else if (thePredecessor == 'e') {
+            currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col - 1};
+            backtrace.push(currentLocation);
+        }
+        else if (thePredecessor == 's') {
+            currentLocation = {currentLocation.room, currentLocation.row - 1, currentLocation.col};
+            backtrace.push(currentLocation);
+        }
+        else if (thePredecessor == 'w') {
+            currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col + 1};
+            backtrace.push(currentLocation);
+        }
         else {
-            cout << "Path taken:\n";
-            while (!backtrace.empty()) {
-                
-            }
-            
-            
+            currentLocation = {castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom, currentLocation.row, currentLocation.col};
+            backtrace.push(currentLocation);
         }
-    }
+    } // while loop
+            
+
 }
