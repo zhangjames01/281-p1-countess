@@ -1,4 +1,4 @@
-// Project Identifier: B99292359FFD910ED13A7E6C7F9705B8742F0D79
+// B99292359FFD910ED13A7E6C7F9705B8742F0D79
 
 /*
 
@@ -12,7 +12,6 @@
 #include <deque>
 
 using namespace std;
-
 
 
 class supermarco {
@@ -38,15 +37,26 @@ private:
     char inputFormat;
     
     struct tile {
-        char symbol;
-        //add more stuff late
-    };
+        char symbol = '.';
+        //add more stuff later
+        
+        u_int32_t room = 0;
+        u_int32_t row = 0;
+        u_int32_t col = 0;
+        
+        char predecessor;
+        
+        bool isDiscovered;
+    }; //make a different struct for the deque?
     
     vector<vector<vector<tile>>> castleMap;
     
+    
+    
+    deque<tile> routingScheme;
+    
     u_int32_t numRooms;
     u_int32_t numRows;
-    u_int32_t numCols;
     
     bool isSolution;
     
