@@ -71,6 +71,7 @@ void supermarco::getOptions(int argc, char** argv) {
 }
 
 void supermarco::readData() {
+    tile temp; // Temporary tile struct to add into 3D vector
     
     // Read in the first three rows to find the
     // input format, number of rooms, and size of each room.
@@ -101,9 +102,18 @@ void supermarco::readData() {
                     }
                     else { // Adds in tile with respect to [room][row][col] into 3D vector
                         for (size_t k = 0; k < numRows; ++k) { //for k
-                            tile temp = {oneLine[static_cast<u_int32_t>(k)], static_cast<u_int32_t>(i), static_cast<u_int32_t>(j), static_cast<u_int32_t>(k)};
+                            temp.symbol = oneLine[static_cast<int>(k)];
+                            
+                            if (temp.symbol == 'S') { // If the tile is the start, add it into the deque
+                                location startLocation = {static_cast<u_int32_t>(i), static_cast<u_int32_t>(j), static_cast<u_int32_t>(k)};
+                                routingScheme.push_back(startLocation);
+                                ++tilesDiscovered;
+                                
+                                temp.isDiscovered = 1; // Start location has been discovered
+                            }
                             
                             castleMap[static_cast<int>(i)][static_cast<int>(j)][static_cast<int>(k)] = temp;
+                            
                         } // for k
                     }
                 } // while loop
@@ -131,9 +141,16 @@ void supermarco::readData() {
         while (cin >> junk) {
             if (junk != '/') { // If it is not a comment, proceed to read the rest of the line
                 cin >> roomNumber >> junk >> rowNumber >> junk >> colNumber >> junk >> tileSymbol >> junk;
+                temp.symbol = tileSymbol;
+                
+                if (tileSymbol == 'S') { // If the tile is the start, add it into the deque
+                    location startLocation = {roomNumber, rowNumber, colNumber};
+                    routingScheme.push_back(startLocation);
+                    ++tilesDiscovered;
+                    temp.isDiscovered = 1; // Start location has been discovered
+                }
                 
                 // Adds in tile with respect to [room][row][col] into 3D vector
-                tile temp = {tileSymbol, roomNumber, rowNumber, colNumber};
                 castleMap[roomNumber][rowNumber][colNumber] = temp;
             }
             else { // Reads line to skip over comments or consumes remaining '\n\' at the end of each line
@@ -150,5 +167,177 @@ void supermarco::readData() {
 }
 
 void supermarco::routing() {
+    location currentLocation;
+    while(!routingScheme.empty()) { // Routing Scheme Loop
+        
+        if (isStack) { // Remove position in back of container if stack
+            currentLocation = routingScheme.back();
+            // Add location walked to backtrace stack
+            backtrace.push(routingScheme.back());
+            routingScheme.pop_back();
+        }
+        else { // Remove position in front of container if queue
+            currentLocation = routingScheme.front();
+            // Add location walked to backtrace stack
+            backtrace.push(routingScheme.front());
+            routingScheme.pop_front();
+        }
+        
+        // If currentlocation at [room][row][col] is a pipe
+        if (isdigit(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].symbol)) {
+            u_int32_t pipeRoom = static_cast<u_int32_t>(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].symbol - '0');
+            if (castleMap[pipeRoom][currentLocation.row][currentLocation.col].symbol != '#' &&
+                castleMap[pipeRoom][currentLocation.row][currentLocation.col].symbol != '!') { // Check if room that pipe leads to is walkable
+                if (!castleMap[pipeRoom][currentLocation.row][currentLocation.col].isDiscovered) { // Check if room that pipe leads to has not been discovered
+                    
+                    // Set the location to discovered
+                    castleMap[pipeRoom][currentLocation.row][currentLocation.col].isDiscovered = 1;
+                    
+                    //Set the location's predecessor
+                    castleMap[pipeRoom][currentLocation.row][currentLocation.col].predecessor = 'p';
+                    
+                    // Add it to the deque
+                    location pipe = {pipeRoom, currentLocation.row, currentLocation.col};
+                    routingScheme.push_back(pipe);
+                    ++tilesDiscovered;
+                    
+                    // If we added the Countess' location, stop searching
+                    if (castleMap[pipe.room][pipe.row][pipe.col].symbol == 'C') {
+                        isSolution = 1;
+                        break;
+                    }
+                }
+            }
+            
+        }
+        // need to know if it exists, then if its walkable, then if its discovered
+        else { // Else current location is not a pipe
+            if (currentLocation.row - 1 != -1) { // Check if North exists (subtract row: < 0)
+                if (castleMap[currentLocation.room][currentLocation.row - 1][currentLocation.col].symbol != '#' &&
+                    castleMap[currentLocation.room][currentLocation.row - 1][currentLocation.col].symbol != '!') { // Check if North is walkable
+                    if (!castleMap[currentLocation.room][currentLocation.row - 1][currentLocation.col].isDiscovered) { // Check if North has not been discovered
+                        
+                        // Set the location to discovered
+                        castleMap[currentLocation.room][currentLocation.row - 1][currentLocation.col].isDiscovered = 1;
+                        
+                        //Set the location's predecessor
+                        castleMap[currentLocation.room][currentLocation.row - 1][currentLocation.col].predecessor = 'n';
+                        
+                        // Add it to the deque
+                        location north = {currentLocation.room, currentLocation.row - 1, currentLocation.col};
+                        routingScheme.push_back(north);
+                        ++tilesDiscovered;
+                        
+                        // If we added the Countess' location, stop searching
+                        if (castleMap[north.room][north.row][north.col].symbol == 'C') {
+                            isSolution = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (currentLocation.col + 1 != numRows) { // Check if East exists (add col: >= numCols)
+                if (castleMap[currentLocation.room][currentLocation.row][currentLocation.col + 1].symbol != '#' &&
+                    castleMap[currentLocation.room][currentLocation.row][currentLocation.col + 1].symbol != '!') { // Check if East is walkable
+                    if (!castleMap[currentLocation.room][currentLocation.row][currentLocation.col + 1].isDiscovered) { // Check if East has not been discovered
+                        
+                        // Set the location to discovered
+                        castleMap[currentLocation.room][currentLocation.row][currentLocation.col + 1].isDiscovered = 1;
+                        
+                        //Set the location's predecessor
+                        castleMap[currentLocation.room][currentLocation.row][currentLocation.col + 1].predecessor = 'e';
+                        
+                        // Add it to the deque
+                        location east = {currentLocation.room, currentLocation.row, currentLocation.col + 1};
+                        routingScheme.push_back(east);
+                        ++tilesDiscovered;
+                        
+                        // If we added the Countess' location, stop searching
+                        if (castleMap[east.room][east.row][east.col].symbol == 'C') {
+                            isSolution = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (currentLocation.row + 1 != numRows) { // Check if South exists (add row: >= numRows)
+                if (castleMap[currentLocation.room][currentLocation.row + 1][currentLocation.col].symbol != '#' &&
+                    castleMap[currentLocation.room][currentLocation.row + 1][currentLocation.col].symbol != '!') { // Check if South is walkable
+                    if (!castleMap[currentLocation.room][currentLocation.row + 1][currentLocation.col].isDiscovered) { // Check if South has not been discovered
+                        
+                        // Set the location to discovered
+                        castleMap[currentLocation.room][currentLocation.row + 1][currentLocation.col].isDiscovered = 1;
+                        
+                        //Set the location's predecessor
+                        castleMap[currentLocation.room][currentLocation.row + 1][currentLocation.col].predecessor = 's';
+                        
+                        // Add it to the deque
+                        location south = {currentLocation.room, currentLocation.row + 1, currentLocation.col};
+                        routingScheme.push_back(south);
+                        ++tilesDiscovered;
+                        
+                        // If we added the Countess' location, stop searching
+                        if (castleMap[south.room][south.row][south.col].symbol == 'C') {
+                            isSolution = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (currentLocation.col - 1 != -1) { // Check if exists (subtract col: < 0)
+                if (castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].symbol != '#' &&
+                    castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].symbol != '!') { // Check if West is walkable
+                    if (!castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].isDiscovered) { // Check if West has not been discovered
+                        
+                        // Set the location to discovered
+                        castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].isDiscovered = 1;
+                        
+                        //Set the location's predecessor
+                        castleMap[currentLocation.room][currentLocation.row][currentLocation.col - 1].isDiscovered = 'w';
+                        
+                        // Add it to the deque
+                        location west = {currentLocation.room, currentLocation.row, currentLocation.col - 1};
+                        routingScheme.push_back(west);
+                        ++tilesDiscovered;
+                        
+                        // If we added the Countess' location, stop searching
+                        if (castleMap[west.room][west.row][west.col].symbol == 'C') {
+                            isSolution = 1;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+        }
+    } // while loop
+}
+
+void supermarco::backtracing() {
+    if (!isSolution) {
+        cout << "No solution, " << tilesDiscovered << " tiles discovered.\n";
+    }
     
+    else {
+        
+    // ----------------------------------------------------------------------------
+    //                               MAP OUTPUT MODE
+    // ----------------------------------------------------------------------------
+        if (outputFormat == 'M') {
+            
+        }
+        
+        
+    // ----------------------------------------------------------------------------
+    //                               LIST ONPUT MODE
+    // ----------------------------------------------------------------------------
+        else {
+            cout << "Path taken:\n";
+            while (!backtrace.empty()) {
+                
+            }
+            
+            
+        }
+    }
 }

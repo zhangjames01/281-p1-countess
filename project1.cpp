@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
     try {
         play.getOptions(argc, argv);
         play.readData();
+        play.routing();
         cout << 1;
     }
 

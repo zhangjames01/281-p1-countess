@@ -6,9 +6,9 @@
 
 */
 
-#include <stdio.h>
 #include <string>
 #include <vector>
+#include <stack>
 #include <deque>
 
 using namespace std;
@@ -38,27 +38,27 @@ private:
     
     struct tile {
         char symbol = '.';
-        //add more stuff later
-        
+        bool isDiscovered;
+        char predecessor;
+    }; 
+    
+    struct location {
         u_int32_t room = 0;
         u_int32_t row = 0;
         u_int32_t col = 0;
-        
-        char predecessor;
-        
-        bool isDiscovered;
-    }; //make a different struct for the deque?
+    };
     
     vector<vector<vector<tile>>> castleMap;
-    
-    
-    
-    deque<tile> routingScheme;
+    deque<location> routingScheme;
     
     u_int32_t numRooms;
     u_int32_t numRows;
     
+    u_int32_t tilesDiscovered = 0;
+    
     bool isSolution;
+    
+    stack<location> backtrace;
     
     
 };
