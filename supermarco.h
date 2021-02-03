@@ -19,17 +19,23 @@ public:
     
     void getOptions(int argc, char** argv);
     
+    void illegalMapCharacter(const char tileSymbol);
+    
+    void invalidCoordinate(const u_int32_t room, const u_int32_t row, const u_int32_t col);
+    
     void readData();
     
     void routing();
     
-    void printSolution(); // REMEMBER THIS. SHOULD BE DONE BEFORE EVEN BACKTRACING
+    bool checkSolution(); // REMEMBER THIS. SHOULD BE DONE BEFORE EVEN BACKTRACING
     
     void backtracing();
     
-    void firstOutputMode();
+    void printOutput();
     
-    void secondOutputMode();
+    void mapOutput();
+    
+    void listOutput();
     
     
 private:

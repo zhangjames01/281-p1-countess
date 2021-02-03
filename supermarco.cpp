@@ -12,6 +12,7 @@
 
 // Read and process command line options.
 void supermarco::getOptions(int argc, char** argv) {
+    u_int8_t sqOnce = 0;
     int option_index = 0, option = 0;
     
     // Don't display getopt error messages about options
@@ -31,6 +32,7 @@ void supermarco::getOptions(int argc, char** argv) {
         switch (option) {
             case 's':
                 isStack = 1;
+                ++sqOnce;
                 break;
 
             case 'h':
@@ -40,17 +42,33 @@ void supermarco::getOptions(int argc, char** argv) {
                 
             case 'q':
                 isStack = 0;
+                ++sqOnce;
                 break;
                 
             case 'o':
                 outputFormat = *optarg;
                 break;
+                
+            default:
+                cerr << "Unknown command line option\n";
+                exit(1);
         }
         
         //HOW DO I CHECK FOR MULTIPLE STACK QUEQ ARGUEMENT ERRORS
         //HOW DO I CHECK FOR NO ARGUMENTS PASSED
         //HOW DO I CHECK FOR UNKNOWN ARGUMENTS
-        //3D VECTOR CLARIFICATION
+    }
+        
+    // If isStack is not specified, then we exit
+    // while printing an error message
+    if (sqOnce == 0)  {//FIXXX THISSSSSSSS CUZ ITS TRUE OR FALSEEEE
+        cerr << "Stack or queue must be specified\n";
+        exit(1);
+    }
+    
+    if (sqOnce > 1) {
+        cerr << "Stack or queue can only be specified once\n";
+        exit(1);
     }
     
     // After all the options have been processed,
@@ -60,12 +78,27 @@ void supermarco::getOptions(int argc, char** argv) {
     if (!outputFormat) {
         outputFormat = 'M';
     }
+}
 
-    
-    // If isStack is not specified, then we exit
-    // while printing an error message
-    if (isStack != 0 && isStack != 1)  {//FIXXX THISSSSSSSS CUZ ITS TRUE OR FALSEEEE
-        cerr << "Stack or queue must be specified\n";
+void supermarco::illegalMapCharacter(const char tileSymbol) {
+    if ((tileSymbol != '.' && tileSymbol != '#' && tileSymbol != '!' && tileSymbol != 'S' && tileSymbol != 'C') &&
+        (tileSymbol < '0' || tileSymbol > '9')) {
+        cerr << "Unknown map character\n";
+        exit(1);
+    }
+}
+
+void supermarco::invalidCoordinate(const u_int32_t room, const u_int32_t row, const u_int32_t col) {
+    if (room < 0 || room >= numRooms) {
+        cerr << "Invalid room number\n";
+        exit(1);
+    }
+    if (row < 0 || row >= numRows) {
+        cerr << "Invalid row number\n";
+        exit(1);
+    }
+    if (col < 0 || col >= numRows) {
+        cerr << "Invalid column number\n";
         exit(1);
     }
 }
@@ -102,6 +135,7 @@ void supermarco::readData() {
                     }
                     else { // Adds in tile with respect to [room][row][col] into 3D vector
                         for (size_t k = 0; k < numRows; ++k) { //for k
+                            illegalMapCharacter(oneLine[static_cast<int>(k)]);
                             temp.symbol = oneLine[static_cast<int>(k)];
                             
                             if (temp.symbol == 'S') { // If the tile is the start, add it into the deque
@@ -142,6 +176,8 @@ void supermarco::readData() {
         while (cin >> junk) {
             if (junk != '/') { // If it is not a comment, proceed to read the rest of the line
                 cin >> roomNumber >> junk >> rowNumber >> junk >> colNumber >> junk >> tileSymbol >> junk;
+                illegalMapCharacter(tileSymbol);
+                invalidCoordinate(roomNumber, rowNumber, colNumber);
                 temp.symbol = tileSymbol;
                 
                 if (tileSymbol == 'S') { // If the tile is the start, add it into the deque
@@ -361,17 +397,26 @@ void supermarco::backtracing() {
 
 }
 
-void supermarco::firstOutputMode() {
-    cout << "Path taken:\n";
-    while (backtrace.size() != 1) {
-        cout << "(" << backtrace.top().room << "," << backtrace.top().row << "," << backtrace.top().col << ","
-        << castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].directionTravelled << ")\n";
-        
-        backtrace.pop();
+bool supermarco::checkSolution() {
+    if (!isSolution) {
+        cout << "No solution, " << tilesDiscovered << " tiles discovered.\n";
+        return 0;
+    }
+    else {
+        return 1;
     }
 }
 
-void supermarco::secondOutputMode() {
+void supermarco::printOutput() {
+    if (outputFormat == 'M') {
+        mapOutput();
+    }
+    else {
+        listOutput();
+    }
+}
+
+void supermarco::mapOutput() {
     cout << "Start in room " << backtrace.top().room << ", row " << backtrace.top().row << ", column " << backtrace.top().col << "\n";
     
     while (backtrace.size() != 1) {
@@ -389,5 +434,15 @@ void supermarco::secondOutputMode() {
             }
             cout << '\n';
         }
+    }
+}
+
+void supermarco::listOutput() {
+    cout << "Path taken:\n";
+    while (backtrace.size() != 1) {
+        cout << "(" << backtrace.top().room << "," << backtrace.top().row << "," << backtrace.top().col << ","
+        << castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].directionTravelled << ")\n";
+        
+        backtrace.pop();
     }
 }

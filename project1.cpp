@@ -16,16 +16,23 @@
 
 
 int main(int argc, char** argv) {
-    ios_base::sync_with_stdio(false);
-    xcode_redirect(argc, argv);
+    ios_base::sync_with_stdio(false); // Speeds up I/O
+    xcode_redirect(argc, argv); // Xcode redirect
     
-    supermarco play;
+    supermarco play; // Instantiate an instant of the supermarco game
+    
     try {
         play.getOptions(argc, argv);
         play.readData();
         play.routing();
         play.backtracing();
-        play.secondOutputMode();
+        if (!play.checkSolution()) {
+            return 0;
+        }
+        else {
+            play.printOutput();
+            return 0;
+        }
         
     }
 
