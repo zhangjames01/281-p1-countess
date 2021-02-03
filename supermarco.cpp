@@ -109,6 +109,7 @@ void supermarco::invalidCoordinate(const u_int32_t room, const u_int32_t row, co
     }
 }
 
+// Reads in input data with either 'map' mode or 'list' mode.
 void supermarco::readData() {
     tile temp; // Temporary tile struct to add into 3D vector
     
@@ -137,24 +138,24 @@ void supermarco::readData() {
                 // For each row, read in one line from the input file.
                 if (getline(cin, oneLine)) {
                     
-//BECAUSE '.' TILES ARE INITIALIZED, I CAN CHECK THAT USING AN IF STATEMENT AND DO NOTHING, SAVING TIME
                     if (oneLine[0] == '/') { // Skip comments.
                         --j; // Account for comments and move j index back so rows dont go +1.
                     }
                     else { // Adds in tile with respect to [room][row][col] into 3D vector.
-                        for (size_t k = 0; k < numRows; ++k) { //for k
-                            illegalMapCharacter(oneLine[static_cast<int>(k)]);
-                            temp.symbol = oneLine[static_cast<int>(k)];
+                        for (size_t k = 0; k < numRows; ++k) {
+                            illegalMapCharacter(oneLine[k]); // Check error.
+                            temp.symbol = oneLine[k]; // Set tile symbol.
                             
-                            if (temp.symbol == 'S') { // If the tile is the start, add it into the deque
+                            // If the tile is the starting location.
+                            if (temp.symbol == 'S') {
+                                // Add it into the deque.
                                 location startLocation = {static_cast<u_int32_t>(i), static_cast<u_int32_t>(j), static_cast<u_int32_t>(k)};
                                 routingScheme.push_back(startLocation);
-                                ++tilesDiscovered;
-                                
-                                temp.isDiscovered = 1; // Start location has been discovered
+                                ++tilesDiscovered; // Start counts as a discovered tile.
+                                temp.isDiscovered = 1; // Start location has been discovered.
                             }
                             
-                            castleMap[static_cast<int>(i)][static_cast<int>(j)][static_cast<int>(k)] = temp;
+                            castleMap[i][j][k] = temp;
                             temp.isDiscovered = 0; // THIS RESETS THE VARIABLE, FIGURE OUT IF TEMP SHOULD BE OUTSIDE OR INSIDE WHILE LOOP
                             
                         } // for k
@@ -212,6 +213,7 @@ void supermarco::readData() {
 
 void supermarco::routing() {
     location currentLocation;
+    
     while(!routingScheme.empty()) { // Routing Scheme Loop
         
         if (isStack) { // Remove position in back of container if stack
@@ -222,6 +224,10 @@ void supermarco::routing() {
             currentLocation = routingScheme.front();
             routingScheme.pop_front();
         }
+        
+        char room = currentLocation.room;
+        char row = currentLocation.row;
+        char col = currentLocation.col;
         
         // If currentlocation at [room][row][col] is a pipe
         if (isdigit(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].symbol)) {
@@ -252,7 +258,6 @@ void supermarco::routing() {
                     }
                 }
             }
-            
         }
         // need to know if it exists, then if its walkable, then if its discovered
         else { // Else current location is not a pipe
