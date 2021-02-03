@@ -42,6 +42,7 @@ private:
         char symbol = '.';
         bool isDiscovered = 0;
         char predecessor;
+        char directionTravelled;
         u_int32_t preceedingRoom;
     }; 
     
@@ -59,7 +60,7 @@ private:
     
     u_int32_t tilesDiscovered = 0;
     
-    bool isSolution;
+    bool isSolution = 0;
     
     stack<location> backtrace;
     

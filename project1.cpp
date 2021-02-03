@@ -25,7 +25,8 @@ int main(int argc, char** argv) {
         play.readData();
         play.routing();
         play.backtracing();
-        cout << 1;
+        play.secondOutputMode();
+        
     }
 
     // Catch runtime_errors, print the message, and exit the

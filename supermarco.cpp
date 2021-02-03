@@ -89,16 +89,16 @@ void supermarco::readData() {
     // ----------------------------------------------------------------------------
     
     if (inputFormat == 'M') { // Map input mode
-        
+        string oneLine;
         for (size_t i = 0; i < numRooms; ++i) { // for i
-            for (size_t j = 0; j < numRows; ++j) { // for j
+            for (int j = 0; j < numRows; ++j) { // for j
                
-                string oneLine;
                 // For each row, read in one line from the input file
-                while (getline(cin, oneLine)) {
+                if (getline(cin, oneLine)) {
                     
-
+//BECAUSE '.' TILES ARE INITIALIZED, I CAN CHECK THAT USING AN IF STATEMENT AND DO NOTHING, SAVING TIME
                     if (oneLine[0] == '/') { // Skip comments.
+                        --j; // Account for comments and move j index back so rows dont go +1
                     }
                     else { // Adds in tile with respect to [room][row][col] into 3D vector
                         for (size_t k = 0; k < numRows; ++k) { //for k
@@ -117,7 +117,7 @@ void supermarco::readData() {
                             
                         } // for k
                     }
-                } // while loop
+                } // if for getline
             } // for j
         } // for i
     }
@@ -319,7 +319,6 @@ void supermarco::routing() {
     } // while loop
 }
 
-
 void supermarco::backtracing() {
     location currentLocation = backtrace.top(); // Sets current location to Countess
 
@@ -329,25 +328,66 @@ void supermarco::backtracing() {
         if (thePredecessor == 'n') {
             // can i change a struct's variables after declaration
             currentLocation = {currentLocation.room, currentLocation.row + 1, currentLocation.col};
+            //if I came from north, then past location went
+            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'n';
             backtrace.push(currentLocation);
         }
         else if (thePredecessor == 'e') {
             currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col - 1};
+            
+            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'e';
             backtrace.push(currentLocation);
         }
         else if (thePredecessor == 's') {
             currentLocation = {currentLocation.room, currentLocation.row - 1, currentLocation.col};
+            
+            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 's';
             backtrace.push(currentLocation);
         }
         else if (thePredecessor == 'w') {
             currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col + 1};
+            
+            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'w';
             backtrace.push(currentLocation);
         }
-        else {
+        else { // PIPE
             currentLocation = {castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom, currentLocation.row, currentLocation.col};
+            
+            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'p';
             backtrace.push(currentLocation);
         }
     } // while loop
             
 
+}
+
+void supermarco::firstOutputMode() {
+    cout << "Path taken:\n";
+    while (backtrace.size() != 1) {
+        cout << "(" << backtrace.top().room << "," << backtrace.top().row << "," << backtrace.top().col << ","
+        << castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].directionTravelled << ")\n";
+        
+        backtrace.pop();
+    }
+}
+
+void supermarco::secondOutputMode() {
+    cout << "Start in room " << backtrace.top().room << ", row " << backtrace.top().row << ", column " << backtrace.top().col << "\n";
+    
+    while (backtrace.size() != 1) {
+        castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].symbol = castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].directionTravelled;
+        
+        backtrace.pop();
+    }
+    //print out path traveled in map form
+    
+    for (size_t i = 0; i < numRooms; ++ i) {
+        cout << "//castle room " << i << "\n";
+        for (size_t j = 0; j < numRows; ++ j) {
+            for (size_t k = 0; k < numRows; ++ k) {
+                cout << castleMap[i][j][k].symbol;
+            }
+            cout << '\n';
+        }
+    }
 }
