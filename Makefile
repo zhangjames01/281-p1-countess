@@ -27,7 +27,7 @@ UNIQNAME    = zhangja
 IDENTIFIER  = B99292359FFD910ED13A7E6C7F9705B8742F0D79
 
 # Change 'executable' to match the command name given in the project spec.
-EXECUTABLE  = project1
+EXECUTABLE  = superMarco
 
 # The following line looks for a project's main() in files named project*.cpp,
 # executable.cpp (substituted from EXECUTABLE above), or main.cpp
@@ -279,6 +279,10 @@ help:
 # myclass.o: myclass.cpp myclass.h $(HEADERS)
 # project5.o: project5.cpp myclass.o $(HEADERS)
 #
+
+  Castle.o: Castle.cpp Castle.h
+  superMarco: superMarco.cpp Castle.o
+
 # SOME EXAMPLES
 #
 #test_thing: test_thing.cpp class.o functions.o
