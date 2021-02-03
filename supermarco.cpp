@@ -12,14 +12,16 @@
 
 // Read and process command line options.
 void supermarco::getOptions(int argc, char** argv) {
+    // Use to check whether 'stack' or 'queue' argument
+    // is entered more or less than one time.
     u_int8_t sqOnce = 0;
+    
     int option_index = 0, option = 0;
     
-    // Don't display getopt error messages about options
+    // Don't display getopt error messages about options.
     opterr = false;
 
-    
-    // use getopt to find command line options
+    // Use getopt to find command line options.
     struct option longOpts[] = {{"stack",  no_argument,       nullptr, 's' },
                                 {"queue",  no_argument,       nullptr, 'q' },
                                 {"output", required_argument, nullptr, 'o' },
@@ -31,64 +33,68 @@ void supermarco::getOptions(int argc, char** argv) {
     while ((option = getopt_long(argc, argv, "sqho:", longOpts, &option_index)) != -1) {
         switch (option) {
             case 's':
+                // Set routing scheme to 'stack' mode.
                 isStack = 1;
                 ++sqOnce;
                 break;
 
             case 'h':
+                // Prints a help message describing what this program does.
                 cout << "Usage: " << argv[0] << " [-s -o M|L]|-h\n"
                      << "This program helps you rescue the countess in Super Marco\n";
                 exit(0);
                 
             case 'q':
+                // Set routing scheme to 'queue' mode.
                 isStack = 0;
                 ++sqOnce;
                 break;
                 
             case 'o':
+                // Sets the output format to either 'map' or 'list'.
                 outputFormat = *optarg;
                 break;
                 
             default:
+                // Checks for invalid command line option.
                 cerr << "Unknown command line option\n";
                 exit(1);
         }
-        
-        //HOW DO I CHECK FOR MULTIPLE STACK QUEQ ARGUEMENT ERRORS
-        //HOW DO I CHECK FOR NO ARGUMENTS PASSED
-        //HOW DO I CHECK FOR UNKNOWN ARGUMENTS
     }
         
-    // If isStack is not specified, then we exit
-    // while printing an error message
-    if (sqOnce == 0)  {//FIXXX THISSSSSSSS CUZ ITS TRUE OR FALSEEEE
+    // If routing scheme is not specifed, then we exit 1
+    // while printing an error message.
+    if (sqOnce == 0)  {
         cerr << "Stack or queue must be specified\n";
         exit(1);
     }
     
+    // If more than one routing scheme is specifed, then we exit 1
+    // while printing an error message.
     if (sqOnce > 1) {
         cerr << "Stack or queue can only be specified once\n";
         exit(1);
     }
     
-    // After all the options have been processed,
-    // check to make sure an output format has been selected.
-    // If one has not been selected, we will default to
-    // map output.
+    // If  and output mode is not specified, default to 'map' output.
     if (!outputFormat) {
         outputFormat = 'M';
     }
 }
 
+// Checks for illegal map characters when reading in data.
 void supermarco::illegalMapCharacter(const char tileSymbol) {
     if ((tileSymbol != '.' && tileSymbol != '#' && tileSymbol != '!' && tileSymbol != 'S' && tileSymbol != 'C') &&
         (tileSymbol < '0' || tileSymbol > '9')) {
+        // Print error message and exit 1.
         cerr << "Unknown map character\n";
         exit(1);
     }
 }
 
+// Checks for invalid coordinate positions when reading in 'list' input mode.
 void supermarco::invalidCoordinate(const u_int32_t room, const u_int32_t row, const u_int32_t col) {
+    // Print error message and exit 1.
     if (room < 0 || room >= numRooms) {
         cerr << "Invalid room number\n";
         exit(1);
@@ -121,19 +127,21 @@ void supermarco::readData() {
     //                               MAP INPUT MODE
     // ----------------------------------------------------------------------------
     
-    if (inputFormat == 'M') { // Map input mode
-        string oneLine;
-        for (size_t i = 0; i < numRooms; ++i) { // for i
-            for (int j = 0; j < numRows; ++j) { // for j
+    if (inputFormat == 'M') {
+        string oneLine; // Variable to store in a line from the input file.
+        
+
+        for (size_t i = 0; i < numRooms; ++i) {
+            for (int j = 0; j < numRows; ++j) { //HAVE TO CHECK THIS UNSIGNED INTEGER COMPARISON
                
-                // For each row, read in one line from the input file
+                // For each row, read in one line from the input file.
                 if (getline(cin, oneLine)) {
                     
 //BECAUSE '.' TILES ARE INITIALIZED, I CAN CHECK THAT USING AN IF STATEMENT AND DO NOTHING, SAVING TIME
                     if (oneLine[0] == '/') { // Skip comments.
-                        --j; // Account for comments and move j index back so rows dont go +1
+                        --j; // Account for comments and move j index back so rows dont go +1.
                     }
-                    else { // Adds in tile with respect to [room][row][col] into 3D vector
+                    else { // Adds in tile with respect to [room][row][col] into 3D vector.
                         for (size_t k = 0; k < numRows; ++k) { //for k
                             illegalMapCharacter(oneLine[static_cast<int>(k)]);
                             temp.symbol = oneLine[static_cast<int>(k)];
@@ -161,47 +169,45 @@ void supermarco::readData() {
     // ----------------------------------------------------------------------------
     
     else {
-        
-        // Variables to store the coordinates
+        // Variables to store the coordinates and the tile symbol.
         u_int32_t roomNumber;
         u_int32_t rowNumber;
         u_int32_t colNumber;
         char tileSymbol;
-        
-        // Variables to skip over comments and other unneeded characters ['(', ',', etc.]
+        // Variables to skip over comments and other unneeded characters ['(', ',', etc.].
         string comments;
         char junk;
         
-        // Read in first char of line to determine if it is a comment
+        // Read in first char of line to determine if it is a comment.
         while (cin >> junk) {
-            if (junk != '/') { // If it is not a comment, proceed to read the rest of the line
+            // If it is not a comment, proceed to read the rest of the line.
+            if (junk != '/') {
+                // Read in the coordinate in the form of '(#,#,#,symbol)'.
                 cin >> roomNumber >> junk >> rowNumber >> junk >> colNumber >> junk >> tileSymbol >> junk;
-                illegalMapCharacter(tileSymbol);
-                invalidCoordinate(roomNumber, rowNumber, colNumber);
-                temp.symbol = tileSymbol;
                 
-                if (tileSymbol == 'S') { // If the tile is the start, add it into the deque
+                illegalMapCharacter(tileSymbol); // Check error.
+                invalidCoordinate(roomNumber, rowNumber, colNumber); // Check error.
+                
+                temp.symbol = tileSymbol; // Set tile symbol.
+                
+                if (tileSymbol == 'S') { // If the tile is the start, add it into the deque.
                     location startLocation = {roomNumber, rowNumber, colNumber};
                     routingScheme.push_back(startLocation);
-                    ++tilesDiscovered;
-                    temp.isDiscovered = 1; // Start location has been discovered
+                    ++tilesDiscovered; // Start counts as a discovered tile.
+                    temp.isDiscovered = 1; // Start location has been discovered.
                 }
                 
-                // Adds in tile with respect to [room][row][col] into 3D vector
+                // Adds in tile with respect to [room][row][col] into 3D vector.
                 castleMap[roomNumber][rowNumber][colNumber] = temp;
-                temp.isDiscovered = 0; // THIS RESETS THE VARIABLE, FIGURE OUT IF TEMP SHOULD BE OUTSIDE OR INSIDE WHILE LOOP
+                temp.isDiscovered = 0; // Resets isDiscovered for next coordinate.
             }
-            else { // Reads line to skip over comments or consumes remaining '\n\' at the end of each line
+            // Reads line to skip over comments or consumes
+            // remaining '\n\' at the end of each line.
+            else {
                 getline(cin, comments);
             }
         } // while loop
     }
-
-
-
-    // If we didn't read in any data, throw an error.
-    if (!numRooms)
-        throw runtime_error("No data was read in! Refer to the help option to see program usage.");
 }
 
 void supermarco::routing() {

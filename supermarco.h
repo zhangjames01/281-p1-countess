@@ -39,7 +39,7 @@ public:
     
     
 private:
-
+    //Reorder this to optimize memory
     bool isStack;
     char outputFormat;
     char inputFormat;
