@@ -12,37 +12,25 @@
 //                               Driver
 // ----------------------------------------------------------------------------
 
-
-
-
 int main(int argc, char** argv) {
-    ios_base::sync_with_stdio(false); // Speeds up I/O
-    xcode_redirect(argc, argv); // Xcode redirect
+    ios_base::sync_with_stdio(false); // Speeds up I/O.
+    xcode_redirect(argc, argv); // Xcode redirect.
     
-    supermarco play; // Instantiate an instant of the supermarco game
+    supermarco play; // Instantiate an instant of the supermarco game.
+ 
+    play.getOptions(argc, argv);
     
-    try {
-        play.getOptions(argc, argv);
-        play.readData();
-        play.routing();
-        play.backtracing();
-        if (!play.checkSolution()) {
-            return 0;
-        }
-        else {
-            play.printOutput();
-            return 0;
-        }
-        
+    play.readData();
+    
+    play.routing();
+    
+    play.backtracing();
+    
+    if (!play.checkSolution()) {
+        return 0;
     }
-
-    // Catch runtime_errors, print the message, and exit the
-    // program with a non-zero status.
-    catch (std::runtime_error& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
+    else {
+        play.printOutput();
+        return 0;
     }
-
-    // All done!
-    return 0;
 }
