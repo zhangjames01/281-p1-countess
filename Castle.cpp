@@ -219,7 +219,7 @@ void Castle::routing() {
                         castleMap[pipeRoom][row][col].predecessor = 'p';
                         
                         //Set the location's preceeding room.
-                        castleMap[pipeRoom][row][col].preceedingRoom = '0' + room;
+                        castleMap[pipeRoom][row][col].preceedingRoom = static_cast<char>('0' + room);
                         
                         // Add it to the deque.
                         location pipe = {pipeRoom, row, col};
