@@ -203,7 +203,7 @@ void Castle::routing() {
         // If currentlocation at [room][row][col] is a pipe.
         if (isdigit(castleMap[room][row][col].symbol)) {
             if (castleMap[room][row][col].symbol - '0' >= 0 && castleMap[room][row][col].symbol - '0' < static_cast<int>(numRooms)) { // Checks if pipe leads to an existing room.
-                //Sets the room that pipe leads to using ASCII operation.
+                // Sets the room that pipe leads to using ASCII operation.
                 u_int32_t pipeRoom = static_cast<u_int32_t>(castleMap[room][row][col].symbol - '0');
                 
                 // Check if room that pipe leads to is walkable.
@@ -219,7 +219,7 @@ void Castle::routing() {
                         castleMap[pipeRoom][row][col].predecessor = 'p';
                         
                         //Set the location's preceeding room.
-                        castleMap[pipeRoom][row][col].preceedingRoom = room;
+                        castleMap[pipeRoom][row][col].preceedingRoom = '0' + room;
                         
                         // Add it to the deque.
                         location pipe = {pipeRoom, row, col};
@@ -357,37 +357,32 @@ void Castle::backtracing() {
         char thePredecessor = castleMap[currentLocation.room][currentLocation.row][currentLocation.col].predecessor;
         if (thePredecessor == 'n') { // North.
             // Change currentLocation to the room south.
-            currentLocation = {currentLocation.room, currentLocation.row + 1, currentLocation.col};
+            currentLocation = {currentLocation.room, currentLocation.row + 1, currentLocation.col, 'n'};
             // Set that room's direction travelled to north.
-            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'n';
             backtrace.push(currentLocation);
         }
         else if (thePredecessor == 'e') { // East.
             // Change currentLocation to the room west.
-            currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col - 1};
+            currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col - 1, 'e'};
             // Set that room's direction travelled to east.
-            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'e';
             backtrace.push(currentLocation);
         }
         else if (thePredecessor == 's') { // South.
             // Change currentLocation to the room north.
-            currentLocation = {currentLocation.room, currentLocation.row - 1, currentLocation.col};
+            currentLocation = {currentLocation.room, currentLocation.row - 1, currentLocation.col, 's'};
             // Set that room's direction travelled to south.
-            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 's';
             backtrace.push(currentLocation);
         }
         else if (thePredecessor == 'w') { // West.
             // Change currentLocation to the room east.
-            currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col + 1};
+            currentLocation = {currentLocation.room, currentLocation.row, currentLocation.col + 1, 'w'};
             // Set that room's direction travelled to west.
-            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'w';
             backtrace.push(currentLocation);
         }
         else { // Pipe.
             // Change currentLocation to the same tile in the room from pipe.
-            currentLocation = {castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom, currentLocation.row, currentLocation.col};
+            currentLocation = {static_cast<u_int32_t>(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom - '0'), currentLocation.row, currentLocation.col, 'p'};
             // Set that room's direction travelled to pipe.
-            castleMap[currentLocation.room][currentLocation.row][currentLocation.col].directionTravelled = 'p';
             backtrace.push(currentLocation);
         }
     } // while loop
@@ -398,12 +393,11 @@ void Castle::mapOutput() {
     cout << "Start in room " << backtrace.top().room << ", row " << backtrace.top().row << ", column " << backtrace.top().col << "\n";
     
     while (backtrace.size() != 1) {
-        castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].symbol = castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].directionTravelled;
-        
-        backtrace.pop();
-    }
-    //print out path traveled in map form
-    
+            castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].symbol = backtrace.top().directionTravelled;
+            
+            backtrace.pop();
+        }
+
     for (size_t i = 0; i < numRooms; ++ i) {
         cout << "//castle room " << i << "\n";
         for (size_t j = 0; j < numRows; ++ j) {
@@ -420,7 +414,7 @@ void Castle::listOutput() {
     cout << "Path taken:\n";
     while (backtrace.size() != 1) {
         cout << "(" << backtrace.top().room << "," << backtrace.top().row << "," << backtrace.top().col << ","
-        << castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].directionTravelled << ")\n";
+        << backtrace.top().directionTravelled << ")\n";
         
         backtrace.pop();
     }

@@ -18,8 +18,16 @@ using namespace std;
 class Castle {
 public:
     
+    
+    // ----------------------------------------------------------------------------
+    //                           Command Line Options
+    // ----------------------------------------------------------------------------
     void getOptions(int argc, char** argv);
     
+    
+    // ----------------------------------------------------------------------------
+    //                               Reading Input
+    // ----------------------------------------------------------------------------
     // Checks for illegal map characters when reading in data.
     void illegalMapCharacter(const char tileSymbol) {
         if ((tileSymbol != '.' && tileSymbol != '#' && tileSymbol != '!' && tileSymbol != 'S' && tileSymbol != 'C') &&
@@ -29,7 +37,6 @@ public:
             exit(1);
         }
     }
-    
     // Checks for invalid coordinate positions when reading in 'list' input mode.
     void invalidCoordinate(const u_int32_t room, const u_int32_t row, const u_int32_t col) {
         u_int32_t zero = 0;
@@ -47,11 +54,18 @@ public:
             exit(1);
         }
     }
-    
     void readData();
     
+    
+    // ----------------------------------------------------------------------------
+    //                             Searching Scheme
+    // ----------------------------------------------------------------------------
     void routing();
     
+    
+    // ----------------------------------------------------------------------------
+    //                            Is there a solution?
+    // ----------------------------------------------------------------------------
     // Checks if there is a solution to the castle. If not, return with message.
     bool checkSolution() {
         if (!isSolution) {
@@ -63,8 +77,16 @@ public:
         }
     }
     
+    
+    // ----------------------------------------------------------------------------
+    //                                Backtracing
+    // ----------------------------------------------------------------------------
     void backtracing();
     
+    
+    // ----------------------------------------------------------------------------
+    //                              Printing Output
+    // ----------------------------------------------------------------------------
     // Determines which output mode to print in.
     void printOutput() {
         if (outputFormat == 'M') {
@@ -74,9 +96,7 @@ public:
             listOutput();
         }
     }
-    
     void mapOutput();
-    
     void listOutput();
     
     
@@ -95,14 +115,14 @@ private:
         u_int32_t room = 0;
         u_int32_t row = 0;
         u_int32_t col = 0;
+        char directionTravelled = ' ';
     };
     
     struct tile {
         char symbol = '.';
         bool isDiscovered = 0;
         char predecessor = ' ';
-        char directionTravelled = ' ';
-        u_int32_t preceedingRoom = 0;
+        char preceedingRoom = ' '; 
     };
     
     location startLocation = {0, 0, 0};
