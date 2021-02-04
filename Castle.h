@@ -81,7 +81,22 @@ public:
     
     
 private:
-    //Reorder this to optimize memory.
+    
+    char outputFormat = ' ';
+    char inputFormat = ' ';
+    bool isStack = 0;
+    bool isSolution = 0;
+    
+    u_int32_t numRooms = 0;
+    u_int32_t numRows = 0;
+    u_int32_t tilesDiscovered = 0;
+    
+    struct location {
+        u_int32_t room = 0;
+        u_int32_t row = 0;
+        u_int32_t col = 0;
+    };
+    
     struct tile {
         char symbol = '.';
         bool isDiscovered = 0;
@@ -90,24 +105,8 @@ private:
         u_int32_t preceedingRoom = 0;
     };
     
-    struct location {
-        u_int32_t room = 0;
-        u_int32_t row = 0;
-        u_int32_t col = 0;
-    };
+    location startLocation = {0, 0, 0};
     
     vector<vector<vector<tile>>> castleMap;
-    deque<location> routingScheme;
     stack<location> backtrace;
-    
-    
-    u_int32_t numRooms = 0;
-    u_int32_t numRows = 0;
-    u_int32_t tilesDiscovered = 0;
-    
-    
-    char outputFormat = ' ';
-    char inputFormat = ' ';
-    bool isStack = 0;
-    bool isSolution = 0;
 };

@@ -54,11 +54,6 @@ void Castle::getOptions(int argc, char** argv) {
                 // Sets the output format to either 'map' or 'list'.
                 outputFormat = *optarg;
                 break;
-                
-            default:
-                // Checks for invalid command line option.
-                cerr << "Unknown command line option\n";
-                exit(1);
         }
     }
         
@@ -77,7 +72,7 @@ void Castle::getOptions(int argc, char** argv) {
     }
     
     // If  and output mode is not specified, default to 'map' output.
-    if (!outputFormat) {
+    if (outputFormat == ' ') {
         outputFormat = 'M';
     }
 }
@@ -122,8 +117,7 @@ void Castle::readData() {
                             // If the tile is the starting location.
                             if (temp.symbol == 'S') {
                                 // Add it into the deque.
-                                location startLocation = {i, static_cast<u_int32_t>(j), k};
-                                routingScheme.push_back(startLocation);
+                                startLocation = {i, static_cast<u_int32_t>(j), k};
                                 ++tilesDiscovered; // Start counts as a discovered tile.
                                 temp.isDiscovered = 1; // Start location has been discovered.
                             }
@@ -165,8 +159,7 @@ void Castle::readData() {
                 temp.symbol = tileSymbol; // Set tile symbol.
                 
                 if (tileSymbol == 'S') { // If the tile is the start, add it into the deque.
-                    location startLocation = {roomNumber, rowNumber, colNumber};
-                    routingScheme.push_back(startLocation);
+                    startLocation = {roomNumber, rowNumber, colNumber};
                     ++tilesDiscovered; // Start counts as a discovered tile.
                     temp.isDiscovered = 1; // Start location has been discovered.
                 }
@@ -186,6 +179,9 @@ void Castle::readData() {
 
 // Searches the castle based on a 'stack' or 'queue' routing scheme.
 void Castle::routing() {
+    deque<location> routingScheme;
+    //Insert the start where Marco is into the routing search container.
+    routingScheme.push_back(startLocation);
     location currentLocation;
     
     while(!routingScheme.empty()) { // Routing Scheme Loop
@@ -206,35 +202,37 @@ void Castle::routing() {
         
         // If currentlocation at [room][row][col] is a pipe.
         if (isdigit(castleMap[room][row][col].symbol)) {
-            //Sets the room that pipe leads to using ASCII operation.
-            u_int32_t pipeRoom = static_cast<u_int32_t>(castleMap[room][row][col].symbol - '0');
-            
-            // Check if room that pipe leads to is walkable.
-            if (castleMap[pipeRoom][row][col].symbol != '#' &&
-                castleMap[pipeRoom][row][col].symbol != '!') {
-                // Check if room that pipe leads to has not been discovered.
-                if (!castleMap[pipeRoom][row][col].isDiscovered) {
-                    
-                    // Set the location to discovered.
-                    castleMap[pipeRoom][row][col].isDiscovered = 1;
-                    
-                    //Set the location's predecessor.
-                    castleMap[pipeRoom][row][col].predecessor = 'p';
-                    
-                    //Set the location's preceeding room.
-                    castleMap[pipeRoom][row][col].preceedingRoom = room;
-                    
-                    // Add it to the deque.
-                    location pipe = {pipeRoom, row, col};
-                    routingScheme.push_back(pipe);
-                    ++tilesDiscovered;
-                    
-                    // If we added the Countess' location,
-                    // stop searching and add to the backtrace stack.
-                    if (castleMap[pipe.room][pipe.row][pipe.col].symbol == 'C') {
-                        isSolution = 1;
-                        backtrace.push(pipe);
-                        break;
+            if (castleMap[room][row][col].symbol - '0' >= 0 && castleMap[room][row][col].symbol - '0' < static_cast<int>(numRooms)) { // Checks if pipe leads to an existing room.
+                //Sets the room that pipe leads to using ASCII operation.
+                u_int32_t pipeRoom = static_cast<u_int32_t>(castleMap[room][row][col].symbol - '0');
+                
+                // Check if room that pipe leads to is walkable.
+                if (castleMap[pipeRoom][row][col].symbol != '#' &&
+                    castleMap[pipeRoom][row][col].symbol != '!') {
+                    // Check if room that pipe leads to has not been discovered.
+                    if (!castleMap[pipeRoom][row][col].isDiscovered) {
+                        
+                        // Set the location to discovered.
+                        castleMap[pipeRoom][row][col].isDiscovered = 1;
+                        
+                        //Set the location's predecessor.
+                        castleMap[pipeRoom][row][col].predecessor = 'p';
+                        
+                        //Set the location's preceeding room.
+                        castleMap[pipeRoom][row][col].preceedingRoom = room;
+                        
+                        // Add it to the deque.
+                        location pipe = {pipeRoom, row, col};
+                        routingScheme.push_back(pipe);
+                        ++tilesDiscovered;
+                        
+                        // If we added the Countess' location,
+                        // stop searching and add to the backtrace stack.
+                        if (castleMap[pipe.room][pipe.row][pipe.col].symbol == 'C') {
+                            isSolution = 1;
+                            backtrace.push(pipe);
+                            break;
+                        }
                     }
                 }
             }
