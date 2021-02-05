@@ -107,12 +107,12 @@ private:
     bool isStack = 0;
     bool isSolution = 0;
     
-    u_int32_t numRooms = 0;
+    uint16_t numRooms = 0;
     u_int32_t numRows = 0;
     u_int32_t tilesDiscovered = 0;
     
     struct location {
-        u_int32_t room = 0;
+        uint16_t room = 0;
         u_int32_t row = 0;
         u_int32_t col = 0;
         char directionTravelled = ' ';
@@ -125,7 +125,7 @@ private:
         char preceedingRoom = ' '; 
     };
     
-    location startLocation = {0, 0, 0};
+    location startLocation;
     
     vector<vector<vector<tile>>> castleMap;
     stack<location> backtrace;

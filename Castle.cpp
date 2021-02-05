@@ -100,7 +100,7 @@ void Castle::readData() {
         string oneLine; // Variable to store in a line from the input file.
         
 
-        for (u_int32_t i = 0; i < numRooms; ++i) {
+        for (uint16_t i = 0; i < numRooms; ++i) {
             for (int j = 0; j < static_cast<int>(numRows); ++j) { //HAVE TO CHECK THIS UNSIGNED INTEGER COMPARISON
                
                 // For each row, read in one line from the input file.
@@ -138,7 +138,7 @@ void Castle::readData() {
     
     else {
         // Variables to store the coordinates and the tile symbol.
-        u_int32_t roomNumber;
+        uint16_t roomNumber;
         u_int32_t rowNumber;
         u_int32_t colNumber;
         char tileSymbol;
@@ -196,15 +196,15 @@ void Castle::routing() {
         }
         
         // Variables to set the current location's coordinates for code readabality.
-        u_int32_t room = currentLocation.room;
+        uint16_t room = currentLocation.room;
         u_int32_t row = currentLocation.row;
         u_int32_t col = currentLocation.col;
         
         // If currentlocation at [room][row][col] is a pipe.
         if (isdigit(castleMap[room][row][col].symbol)) {
-            if (castleMap[room][row][col].symbol - '0' >= 0 && castleMap[room][row][col].symbol - '0' < static_cast<int>(numRooms)) { // Checks if pipe leads to an existing room.
+            if (castleMap[room][row][col].symbol - '0' >= 0 && castleMap[room][row][col].symbol - '0' < static_cast<int8_t>(numRooms)) { // Checks if pipe leads to an existing room.
                 // Sets the room that pipe leads to using ASCII operation.
-                u_int32_t pipeRoom = static_cast<u_int32_t>(castleMap[room][row][col].symbol - '0');
+                uint16_t pipeRoom = static_cast<uint16_t>(castleMap[room][row][col].symbol - '0');
                 
                 // Check if room that pipe leads to is walkable.
                 if (castleMap[pipeRoom][row][col].symbol != '#' &&
@@ -239,7 +239,7 @@ void Castle::routing() {
         }
         
         else { // Else current location is not a pipe.
-            if (row - 1 != static_cast<u_int32_t>(-1)) { // Check if North exists (subtract row: < 0).
+            if (row - 1 != static_cast<u_int>(-1)) { // Check if North exists (subtract row: < 0).
                 if (castleMap[room][row - 1][col].symbol != '#' &&
                     castleMap[room][row - 1][col].symbol != '!') { // Check if North is walkable.
                     if (!castleMap[room][row - 1][col].isDiscovered) { // Check if North has not been discovered.
@@ -381,7 +381,7 @@ void Castle::backtracing() {
         }
         else { // Pipe.
             // Change currentLocation to the same tile in the room from pipe.
-            currentLocation = {static_cast<u_int32_t>(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom - '0'), currentLocation.row, currentLocation.col, 'p'};
+            currentLocation = {static_cast<uint16_t>(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom - '0'), currentLocation.row, currentLocation.col, 'p'};
             // Set that room's direction travelled to pipe.
             backtrace.push(currentLocation);
         }
