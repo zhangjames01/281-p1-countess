@@ -122,7 +122,6 @@ private:
         char symbol = '.';
         bool isDiscovered = 0;
         char predecessor = ' ';
-        char preceedingRoom = ' ';
     };
     
     location startLocation;

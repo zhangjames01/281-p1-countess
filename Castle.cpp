@@ -217,10 +217,7 @@ void Castle::routing() {
                         castleMap[pipeRoom][row][col].isDiscovered = 1;
                         
                         //Set the location's predecessor.
-                        castleMap[pipeRoom][row][col].predecessor = 'p';
-                        
-                        //Set the location's preceeding room.
-                        castleMap[pipeRoom][row][col].preceedingRoom = static_cast<char>('0' + room);
+                        castleMap[pipeRoom][row][col].predecessor = static_cast<char>('0' + room);
                         
                         // Add it to the deque.
                         location pipe = {static_cast<char>('0' + pipeRoom), row, col};
@@ -382,7 +379,7 @@ void Castle::backtracing() {
         }
         else { // Pipe.
             // Change currentLocation to the same tile in the room from pipe.
-            currentLocation = {castleMap[static_cast<uint16_t>(currentLocation.room - '0')][currentLocation.row][currentLocation.col].preceedingRoom, currentLocation.row, currentLocation.col, 'p'};
+            currentLocation = {castleMap[static_cast<uint16_t>(currentLocation.room - '0')][currentLocation.row][currentLocation.col].predecessor, currentLocation.row, currentLocation.col, 'p'};
             // Set that room's direction travelled to pipe.
             backtrace.push(currentLocation);
         }
