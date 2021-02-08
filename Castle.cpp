@@ -117,7 +117,8 @@ void Castle::readData() {
                             // If the tile is the starting location.
                             if (temp.symbol == 'S') {
                                 // Add it into the deque.
-                                startLocation = {i, static_cast<u_int32_t>(j), k};
+                                
+                                startLocation = {static_cast<char>('0' + i), static_cast<u_int32_t>(j), k};
                                 ++tilesDiscovered; // Start counts as a discovered tile.
                                 temp.isDiscovered = 1; // Start location has been discovered.
                             }
@@ -159,7 +160,7 @@ void Castle::readData() {
                 temp.symbol = tileSymbol; // Set tile symbol.
                 
                 if (tileSymbol == 'S') { // If the tile is the start, add it into the deque.
-                    startLocation = {roomNumber, rowNumber, colNumber};
+                    startLocation = {static_cast<char>('0' + roomNumber), rowNumber, colNumber};
                     ++tilesDiscovered; // Start counts as a discovered tile.
                     temp.isDiscovered = 1; // Start location has been discovered.
                 }
@@ -196,7 +197,7 @@ void Castle::routing() {
         }
         
         // Variables to set the current location's coordinates for code readabality.
-        uint16_t room = currentLocation.room;
+        uint16_t room = static_cast<uint16_t>(currentLocation.room - '0');
         u_int32_t row = currentLocation.row;
         u_int32_t col = currentLocation.col;
         
@@ -222,13 +223,13 @@ void Castle::routing() {
                         castleMap[pipeRoom][row][col].preceedingRoom = static_cast<char>('0' + room);
                         
                         // Add it to the deque.
-                        location pipe = {pipeRoom, row, col};
+                        location pipe = {static_cast<char>('0' + pipeRoom), row, col};
                         routingScheme.push_back(pipe);
                         ++tilesDiscovered;
                         
                         // If we added the Countess' location,
                         // stop searching and add to the backtrace stack.
-                        if (castleMap[pipe.room][pipe.row][pipe.col].symbol == 'C') {
+                        if (castleMap[static_cast<uint16_t>(pipe.room - '0')][pipe.row][pipe.col].symbol == 'C') {
                             isSolution = 1;
                             backtrace.push(pipe);
                             break;
@@ -251,13 +252,13 @@ void Castle::routing() {
                         castleMap[room][row - 1][col].predecessor = 'n';
                         
                         // Add it to the deque.
-                        location north = {room, row - 1, col};
+                        location north = {static_cast<char>('0' + room), row - 1, col};
                         routingScheme.push_back(north);
                         ++tilesDiscovered;
                         
                         // If we added the Countess' location,
                         // stop searching and add to the backtrace stack
-                        if (castleMap[north.room][north.row][north.col].symbol == 'C') {
+                        if (castleMap[static_cast<uint16_t>(north.room - '0')][north.row][north.col].symbol == 'C') {
                             isSolution = 1;
                             backtrace.push(north);
                             break;
@@ -277,13 +278,13 @@ void Castle::routing() {
                         castleMap[room][row][col + 1].predecessor = 'e';
                         
                         // Add it to the deque.
-                        location east = {room, row, col + 1};
+                        location east = {static_cast<char>('0' + room), row, col + 1};
                         routingScheme.push_back(east);
                         ++tilesDiscovered;
                         
                         // If we added the Countess' location,
                         // stop searching and add to the backtrace stack.
-                        if (castleMap[east.room][east.row][east.col].symbol == 'C') {
+                        if (castleMap[static_cast<uint16_t>(east.room - '0')][east.row][east.col].symbol == 'C') {
                             isSolution = 1;
                             backtrace.push(east);
                             break;
@@ -303,13 +304,13 @@ void Castle::routing() {
                         castleMap[room][row + 1][col].predecessor = 's';
                         
                         // Add it to the deque.
-                        location south = {room, row + 1, col};
+                        location south = {static_cast<char>('0' + room), row + 1, col};
                         routingScheme.push_back(south);
                         ++tilesDiscovered;
                         
                         // If we added the Countess' location,
                         // stop searching and add to the backtrace stack.
-                        if (castleMap[south.room][south.row][south.col].symbol == 'C') {
+                        if (castleMap[static_cast<uint16_t>(south.room - '0')][south.row][south.col].symbol == 'C') {
                             isSolution = 1;
                             backtrace.push(south);
                             break;
@@ -329,13 +330,13 @@ void Castle::routing() {
                         castleMap[room][row][col - 1].predecessor = 'w';
                         
                         // Add it to the deque.
-                        location west = {room, row, col - 1};
+                        location west = {static_cast<char>('0' + room), row, col - 1};
                         routingScheme.push_back(west);
                         ++tilesDiscovered;
                         
                         // If we added the Countess' location,
                         // stop searching and add to the backtrace stack.
-                        if (castleMap[west.room][west.row][west.col].symbol == 'C') {
+                        if (castleMap[static_cast<uint16_t>(west.room - '0')][west.row][west.col].symbol == 'C') {
                             isSolution = 1;
                             backtrace.push(west);
                             break;
@@ -353,8 +354,8 @@ void Castle::backtracing() {
     
 
     // While loops until starting position has been added into the backtrace stack.
-    while (castleMap[currentLocation.room][currentLocation.row][currentLocation.col].symbol != 'S') {
-        char thePredecessor = castleMap[currentLocation.room][currentLocation.row][currentLocation.col].predecessor;
+    while (castleMap[static_cast<uint16_t>(currentLocation.room - '0')][currentLocation.row][currentLocation.col].symbol != 'S') {
+        char thePredecessor = castleMap[static_cast<uint16_t>(currentLocation.room - '0')][currentLocation.row][currentLocation.col].predecessor;
         if (thePredecessor == 'n') { // North.
             // Change currentLocation to the room south.
             currentLocation = {currentLocation.room, currentLocation.row + 1, currentLocation.col, 'n'};
@@ -381,7 +382,7 @@ void Castle::backtracing() {
         }
         else { // Pipe.
             // Change currentLocation to the same tile in the room from pipe.
-            currentLocation = {static_cast<uint16_t>(castleMap[currentLocation.room][currentLocation.row][currentLocation.col].preceedingRoom - '0'), currentLocation.row, currentLocation.col, 'p'};
+            currentLocation = {castleMap[static_cast<uint16_t>(currentLocation.room - '0')][currentLocation.row][currentLocation.col].preceedingRoom, currentLocation.row, currentLocation.col, 'p'};
             // Set that room's direction travelled to pipe.
             backtrace.push(currentLocation);
         }
@@ -393,7 +394,7 @@ void Castle::mapOutput() {
     cout << "Start in room " << backtrace.top().room << ", row " << backtrace.top().row << ", column " << backtrace.top().col << "\n";
     
     while (backtrace.size() != 1) {
-            castleMap[backtrace.top().room][backtrace.top().row][backtrace.top().col].symbol = backtrace.top().directionTravelled;
+            castleMap[static_cast<uint16_t>(backtrace.top().room - '0')][backtrace.top().row][backtrace.top().col].symbol = backtrace.top().directionTravelled;
             
             backtrace.pop();
         }

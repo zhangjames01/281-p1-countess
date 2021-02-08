@@ -38,8 +38,8 @@ public:
         }
     }
     // Checks for invalid coordinate positions when reading in 'list' input mode.
-    void invalidCoordinate(const u_int32_t room, const u_int32_t row, const u_int32_t col) {
-        u_int32_t zero = 0;
+    void invalidCoordinate(const uint16_t room, const u_int32_t row, const u_int32_t col) {
+        uint16_t zero = 0;
         // Print error message and exit 1.
         if (room < zero || room >= numRooms) {
             cerr << "Invalid room number\n";
@@ -112,7 +112,7 @@ private:
     u_int32_t tilesDiscovered = 0;
     
     struct location {
-        uint16_t room = 0;
+        char room = ' ';
         u_int32_t row = 0;
         u_int32_t col = 0;
         char directionTravelled = ' ';
@@ -122,7 +122,7 @@ private:
         char symbol = '.';
         bool isDiscovered = 0;
         char predecessor = ' ';
-        char preceedingRoom = ' '; 
+        char preceedingRoom = ' ';
     };
     
     location startLocation;
